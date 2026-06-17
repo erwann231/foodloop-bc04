@@ -1,17 +1,19 @@
 'use client';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 export default function Navbar() {
     const router = useRouter();
+    const pathname = usePathname();
     const [user, setUser] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         const stored = localStorage.getItem('foodloop_user');
         if (stored) setUser(JSON.parse(stored));
-    }, []);
+        else setUser(null);
+    }, [pathname]); // Se relance à chaque changement de page
 
     const logout = () => {
         localStorage.removeItem('foodloop_token');
