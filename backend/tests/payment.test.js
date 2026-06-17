@@ -3,16 +3,16 @@
 // Lancer : npx jest payment.test.js --coverage
 
 const request = require('supertest');
-const app = require('../app'); // ton app Express (sans .listen)
-const stripeService = require('../services/stripe.service');
-const socketService = require('../services/socket.service');
-const db = require('../db');
+const { app }= require('../src/index'); // ton app Express (sans .listen)
+const stripeService = require('../src/services/stripe.service');
+const socketService = require('../src/services/socket.service');
+const db = require('../src/config/database');
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-jest.mock('../services/stripe.service');
-jest.mock('../services/socket.service');
-jest.mock('../db');
+jest.mock('../src/services/stripe.service');
+jest.mock('../src/services/socket.service');
+jest.mock('../src/config/database');
 
 // Token JWT valide pour les tests (consumer)
 const CONSUMER_TOKEN = 'Bearer test-consumer-token';
@@ -259,7 +259,7 @@ describe('POST /api/payments/refund', () => {
 // ── Groupe 4 : Socket.IO ──────────────────────────────────────────────────────
 
 describe('Socket.IO — emitOrderUpdate', () => {
-  const socketService = require('../services/socket.service');
+  const socketService = require('../src/services/socket.service');
 
   it('émet le bon payload sur la bonne room', () => {
     const mockIO = {
@@ -268,7 +268,7 @@ describe('Socket.IO — emitOrderUpdate', () => {
     };
 
     // Réinitialiser avec le mock
-    socketService.init(mockIO);
+    socketService.initSocket(mockIO);
     socketService.emitOrderUpdate('order-uuid-1', 'preparing');
 
     expect(mockIO.to).toHaveBeenCalledWith('order:order-uuid-1');
