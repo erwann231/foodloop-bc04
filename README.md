@@ -1,163 +1,179 @@
 # 🥦 FoodLoop — Marketplace de circuits courts
 
-> Projet BC04 — Bachelor 3 Chef de Projet Digital  
-> Workshop du 17 au 19 Juin 2025
+Projet BC04 — Bachelor 3 Chef de Projet Digital  
+Workshop du 17 au 19 Juin 2026
+
+## 🌐 Application en production
+
+| Service | URL |
+| :---- | :---- |
+| **Frontend** | [https://foodloop-frontend.onrender.com](https://foodloop-frontend.onrender.com) |
+| **Backend API** | [https://foodloop-backend-f20e.onrender.com](https://foodloop-backend-f20e.onrender.com) |
+| **Health check** | [https://foodloop-backend-f20e.onrender.com/health](https://foodloop-backend-f20e.onrender.com/health) |
+
+---
 
 ## 👥 Équipe
 
-| Rôle | Responsabilités |
-|------|----------------|
-| Lead Dev Backend | API, BDD, Auth, Déploiement |
-| Dev Backend | Stripe, WebSocket, Abonnements |
-| Dev Frontend | React/Next.js, Pages, Intégration UI |
-| Design + Docs | Figma, RGPD, Specs, Recettage |
+| Membre | Rôle | Responsabilités |
+| :---- | :---- | :---- |
+| Erwan | Lead Dev Backend | API, BDD, Auth, Déploiement, Tests |
+| Membre 2 | Dev Backend | Stripe, Socket.IO, Abonnements |
+| Membre 3 | Dev Frontend | Pages React/Next.js, Intégration UI |
+| Membre 4 | Design \+ Docs | Figma, RGPD, Specs fonctionnelles |
 
 ---
 
 ## 🏗️ Stack technique
 
 | Couche | Technologie |
-|--------|-------------|
+| :---- | :---- |
 | Frontend | Next.js 14 (App Router) |
-| Backend | Node.js + Express |
+| Backend | Node.js \+ Express |
 | Base de données | PostgreSQL |
-| Cache | Redis (optionnel) |
-| Paiement | Stripe Connect |
 | Temps réel | Socket.IO |
+| Paiement | Stripe Connect |
 | Déploiement | Render.com |
 
 ---
 
 ## 📁 Structure du projet
 
-```
 foodloop/
-├── backend/          # API Node.js + Express
+
+├── backend/          \# API Node.js \+ Express
+
 │   ├── src/
-│   │   ├── config/       # Config DB, Stripe, etc.
-│   │   ├── controllers/  # Logique métier
-│   │   ├── middlewares/  # Auth, validation, erreurs
-│   │   ├── models/       # Requêtes SQL (pas d'ORM)
-│   │   ├── routes/       # Définition des routes
-│   │   ├── services/     # Services externes (Stripe, mail...)
-│   │   └── utils/        # Helpers divers
-│   ├── tests/            # Tests unitaires (Jest)
-│   ├── .env.example
-│   └── package.json
+
+│   │   ├── config/       \# Config DB, migration SQL
+
+│   │   ├── controllers/  \# Auth, produits, commandes
+
+│   │   ├── middlewares/  \# JWT, gestion erreurs
+
+│   │   ├── routes/       \# Définition des routes API
+
+│   │   └── services/     \# Socket.IO, Stripe
+
+│   └── tests/            \# Tests unitaires Jest (coverage 78%)
+
 │
-├── frontend/         # Application Next.js
-│   ├── src/
-│   │   ├── app/          # Pages (App Router)
-│   │   ├── components/   # Composants réutilisables
-│   │   ├── hooks/        # Hooks custom
-│   │   ├── lib/          # Config API, utils
-│   │   └── types/        # Types TypeScript
-│   ├── .env.example
-│   └── package.json
+
+├── frontend/         \# Application Next.js
+
+│   └── src/
+
+│       ├── app/          \# Pages (App Router)
+
+│       ├── components/   \# Navbar
+
+│       └── lib/          \# Client API centralisé
+
 │
-└── docs/             # Documents livrables
-    ├── L1_RGPD.md
-    ├── L2_schema_bdd.sql
-    └── L3_specs.md
-```
+
+└── docs/             \# Documents livrables
 
 ---
 
-## 🚀 Installation (à faire sur chaque machine)
+## 🚀 Installation en local
 
 ### Prérequis
 
-1. **Installer Node.js** (si pas encore fait) :  
-   👉 https://nodejs.org/en — télécharger la version **LTS**  
-   Vérifier l'installation : `node -v` et `npm -v`
-
-2. **Installer PostgreSQL** :  
-   👉 https://www.postgresql.org/download/  
-   Ou via Docker : `docker run --name foodloop-db -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres`
-
-3. **Cloner le repo** :
-   ```bash
-   git clone https://github.com/VOTRE-ORG/foodloop.git
-   cd foodloop
-   ```
+- Node.js v20 LTS  
+- PostgreSQL 16  
+- Git
 
 ### Backend
 
-```bash
 cd backend
+
 cp .env.example .env
-# Remplir les variables dans .env
+
+\# Remplir DB\_PASSWORD et JWT\_SECRET dans .env
+
 npm install
-npm run db:migrate    # Créer les tables
-npm run dev           # Lancer en mode dev (port 3001)
-```
+
+npm run db:migrate
+
+npm run dev
+
+\# Serveur sur http://localhost:3001
 
 ### Frontend
 
-```bash
 cd frontend
+
 cp .env.example .env.local
-# Remplir les variables dans .env.local
+
 npm install
-npm run dev           # Lancer en mode dev (port 3000)
-```
+
+npm run dev
+
+\# App sur http://localhost:3000
 
 ---
 
-## 🌿 Conventions Git
+## 🌿 Workflow Git
 
-### Branches
-```
-main          → production uniquement
-develop       → branche d'intégration principale
-feat/xxx      → nouvelle fonctionnalité
-fix/xxx       → correction de bug
-```
+main      → production (déploiement automatique Render)
 
-### Messages de commit
-```
-feat: ajout authentification JWT
-fix: correction calcul panier
-docs: mise à jour README
-test: tests unitaires route auth
-```
+develop   → intégration
 
-### Workflow
-1. Toujours partir de `develop` : `git checkout develop && git pull`
-2. Créer une branche : `git checkout -b feat/ma-feature`
-3. Commit régulièrement
-4. Push et ouvrir une Pull Request vers `develop`
-5. Un autre membre relit et merge
+feat/xxx  → fonctionnalités
+
+\# Créer une branche
+
+git checkout develop && git pull origin develop
+
+git checkout \-b feat/ma-feature
+
+\# Committer
+
+git add .
+
+git commit \-m "feat: description"
+
+git push origin feat/ma-feature
+
+\# → Ouvrir une Pull Request vers develop sur GitHub
 
 ---
 
 ## 🧪 Tests
 
-```bash
 cd backend
-npm run test          # Lancer tous les tests
-npm run test:coverage # Rapport de coverage (objectif : 60%+)
-```
+
+npm run test           \# Lancer les tests
+
+npm run test:coverage  \# Rapport coverage (78%)
 
 ---
 
-## 🌐 Déploiement (Render.com)
+## 📡 Routes API principales
 
-Voir le fichier `backend/render.yaml` et `frontend/render.yaml` pour la config automatique.
-
-URL de production : **À compléter après déploiement**
+| Méthode | Route | Auth | Description |
+| :---- | :---- | :---- | :---- |
+| POST | `/api/auth/register` | Non | Inscription |
+| POST | `/api/auth/login` | Non | Connexion |
+| GET | `/api/auth/me` | Oui | Profil connecté |
+| GET | `/api/products` | Non | Liste produits avec filtres |
+| POST | `/api/products` | Producteur | Créer un produit |
+| POST | `/api/orders` | Consumer | Passer une commande |
+| GET | `/api/orders/mine` | Consumer | Mes commandes |
+| PATCH | `/api/orders/:id/status` | Producteur | Changer statut |
 
 ---
 
 ## 📋 Livrables
 
-| # | Livrable | Fichier/URL | Statut |
-|---|---------|-------------|--------|
+| \# | Livrable | Fichier / URL | Statut |
+| :---- | :---- | :---- | :---- |
 | L1 | Politique RGPD | `docs/L1_RGPD.md` | ⏳ |
-| L2 | Schéma BDD | `docs/L2_schema_bdd.sql` | ⏳ |
+| L2 | Schéma BDD | `backend/src/config/migrate.js` | ✅ |
 | L3 | Specs fonctionnelles | `docs/L3_specs.md` | ⏳ |
-| L4 | App déployée | URL Render | ⏳ |
-| L5 | Tests unitaires | `backend/tests/` | ⏳ |
-| L6 | Dépôt Git | Ce repo | ✅ |
+| L4 | App déployée | [https://foodloop-frontend.onrender.com](https://foodloop-frontend.onrender.com) | ✅ |
+| L5 | Tests unitaires | `backend/tests/` — coverage 78% | ✅ |
+| L6 | Dépôt Git | [https://github.com/erwann231/foodloop-bc04](https://github.com/erwann231/foodloop-bc04) | ✅ |
 | L7 | Design Figma | Lien Figma | ⏳ |
-| L8 | Fonctionnalités | App live | ⏳ |
+| L8 | Fonctionnalités F01-F08 | App live | 🔄 |
+
