@@ -1,0 +1,53 @@
+# render.yaml — Configuration de déploiement automatique sur Render.com
+# Déposer ce fichier à la racine du repo et connecter le repo sur render.com/dashboard
+
+services:
+  # ============================================
+  # BACKEND — Node.js API
+  # ============================================
+  - type: web
+    name: foodloop-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: foodloop-db
+          property: connectionString
+      - key: FRONTEND_URL
+        sync: false  # À remplir manuellement avec l'URL du frontend
+      - key: STRIPE_SECRET_KEY
+        sync: false  # À remplir manuellement
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+  # ============================================
+  # FRONTEND — Next.js
+  # ============================================
+  - type: web
+    name: foodloop-frontend
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false  # Remplir avec https://foodloop-backend.onrender.com/api
+      - key: NEXT_PUBLIC_SOCKET_URL
+        sync: false  # Remplir avec https://foodloop-backend.onrender.com
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false
+
+# ============================================
+# BASE DE DONNÉES — PostgreSQL
+# ============================================
+databases:
+  - name: foodloop-db
+    databaseName: foodloop
+    plan: free

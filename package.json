@@ -1,0 +1,13 @@
+{
+  "name": "foodloop",
+  "version": "1.0.0",
+  "description": "Marketplace de circuits courts alimentaires — BC04 Workshop",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "test": "cd backend && npm run test",
+    "test:coverage": "cd backend && npm run test:coverage"
+  }
+}
