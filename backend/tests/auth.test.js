@@ -4,7 +4,7 @@ const { app, server } = require('../src/index');
 // Mock de la base de données pour les tests
 jest.mock('../src/config/database', () => ({
   query: jest.fn(),
-  pool: { end: jest.fn() },
+  pool: { end: jest.fn(), connect: jest.fn() },
 }));
 
 const { query } = require('../src/config/database');
@@ -20,17 +20,17 @@ describe('POST /api/auth/register', () => {
 
   test('devrait créer un utilisateur avec les bons champs', async () => {
     query
-      .mockResolvedValueOnce({ rows: [] }) // vérification email inexistant
-      .mockResolvedValueOnce({
-        rows: [{
-          id: 'uuid-test',
-          email: 'test@test.com',
-          first_name: 'Jean',
-          last_name: 'Dupont',
-          role: 'consumer',
-          created_at: new Date(),
-        }],
-      });
+        .mockResolvedValueOnce({ rows: [] }) // vérification email inexistant
+        .mockResolvedValueOnce({
+          rows: [{
+            id: 'uuid-test',
+            email: 'test@test.com',
+            first_name: 'Jean',
+            last_name: 'Dupont',
+            role: 'consumer',
+            created_at: new Date(),
+          }],
+        });
 
     const res = await request(app).post('/api/auth/register').send({
       email: 'test@test.com',
