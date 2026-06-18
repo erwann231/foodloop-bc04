@@ -11,10 +11,13 @@ export default function ProductsPage() {
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({ search: '', category: '', label: '', city: '' });
     const [cart, setCart] = useState([]);
+    const [userRole, setUserRole] = useState(null);
 
     useEffect(() => {
         const stored = localStorage.getItem('foodloop_cart');
         if (stored) setCart(JSON.parse(stored));
+        const user = JSON.parse(localStorage.getItem('foodloop_user') || 'null');
+        if (user) setUserRole(user.role);
     }, []);
 
     useEffect(() => {
@@ -201,7 +204,7 @@ export default function ProductsPage() {
                     gap: '1.25rem',
                 }}>
                     {products.map(product => (
-                        <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
+                        <ProductCard key={product.id} product={product} onAddToCart={addToCart} userRole={userRole} />
                     ))}
                 </div>
             )}
@@ -209,7 +212,7 @@ export default function ProductsPage() {
     );
 }
 
-function ProductCard({ product, onAddToCart }) {
+function ProductCard({ product, onAddToCart, userRole }) {
     const [added, setAdded] = useState(false);
 
     const handleAdd = () => {
@@ -280,22 +283,24 @@ function ProductCard({ product, onAddToCart }) {
               / {product.unit}
             </span>
                     </div>
-                    <button
-                        onClick={handleAdd}
-                        style={{
-                            background: added ? '#10b981' : 'var(--color-primary)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '0.45rem 0.9rem',
-                            fontSize: '0.85rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            transition: 'background 0.2s',
-                        }}
-                    >
-                        {added ? '✓ Ajouté' : '+ Panier'}
-                    </button>
+                    {userRole !== 'producer' && (
+                        <button
+                            onClick={handleAdd}
+                            style={{
+                                background: added ? '#10b981' : 'var(--color-primary)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '0.45rem 0.9rem',
+                                fontSize: '0.85rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                transition: 'background 0.2s',
+                            }}
+                        >
+                            {added ? '✓ Ajouté' : '+ Panier'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
