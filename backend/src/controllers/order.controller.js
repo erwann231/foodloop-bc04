@@ -1,4 +1,4 @@
-const { query } = require('../config/database');
+const { query, pool } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 const { emitOrderUpdate } = require('../services/socket.service');
 
@@ -17,7 +17,7 @@ const { emitOrderUpdate } = require('../services/socket.service');
  * }
  */
 const createOrder = async (req, res, next) => {
-    const client = await require('../config/database').pool.connect();
+    const client = await pool.connect();
 
     try {
         const { hub_id, items, notes } = req.body;
@@ -34,8 +34,8 @@ const createOrder = async (req, res, next) => {
         const productIds = items.map(i => i.product_id);
         const productsResult = await client.query(
             `SELECT p.id, p.name, p.price, p.stock_quantity, p.is_available, p.producer_id
-       FROM products p
-       WHERE p.id = ANY($1::uuid[])`,
+             FROM products p
+             WHERE p.id = ANY($1::uuid[])`,
             [productIds]
         );
 
@@ -89,8 +89,8 @@ const createOrder = async (req, res, next) => {
         // Créer la commande
         const orderResult = await client.query(
             `INSERT INTO orders (consumer_id, hub_id, total_amount, platform_fee, qr_code, notes)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
+             VALUES ($1, $2, $3, $4, $5, $6)
+                 RETURNING *`,
             [consumer_id, hub_id || null, total_amount, platform_fee, qr_code, notes || null]
         );
 
@@ -100,7 +100,7 @@ const createOrder = async (req, res, next) => {
         for (const item of orderItems) {
             await client.query(
                 `INSERT INTO order_items (order_id, product_id, producer_id, quantity, unit_price, subtotal)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+                 VALUES ($1, $2, $3, $4, $5, $6)`,
                 [order.id, item.product_id, item.producer_id, item.quantity, item.unit_price, item.subtotal]
             );
 
@@ -139,14 +139,14 @@ const getMyOrders = async (req, res, next) => {
     try {
         const result = await query(
             `SELECT o.*,
-              h.name as hub_name, h.address as hub_address,
-              COUNT(oi.id) as item_count
-       FROM orders o
-       LEFT JOIN hubs h ON o.hub_id = h.id
-       LEFT JOIN order_items oi ON o.id = oi.order_id
-       WHERE o.consumer_id = $1
-       GROUP BY o.id, h.name, h.address
-       ORDER BY o.created_at DESC`,
+                    h.name as hub_name, h.address as hub_address,
+                    COUNT(oi.id) as item_count
+             FROM orders o
+                      LEFT JOIN hubs h ON o.hub_id = h.id
+                      LEFT JOIN order_items oi ON o.id = oi.order_id
+             WHERE o.consumer_id = $1
+             GROUP BY o.id, h.name, h.address
+             ORDER BY o.created_at DESC`,
             [req.user.id]
         );
 
@@ -167,9 +167,9 @@ const getOrder = async (req, res, next) => {
         // Récupérer la commande
         const orderResult = await query(
             `SELECT o.*, h.name as hub_name, h.address as hub_address
-       FROM orders o
-       LEFT JOIN hubs h ON o.hub_id = h.id
-       WHERE o.id = $1`,
+             FROM orders o
+                      LEFT JOIN hubs h ON o.hub_id = h.id
+             WHERE o.id = $1`,
             [id]
         );
 
@@ -187,12 +187,12 @@ const getOrder = async (req, res, next) => {
         // Récupérer les lignes de commande
         const itemsResult = await query(
             `SELECT oi.*, p.name as product_name, p.unit, p.images,
-              pr.farm_name, u.first_name as producer_first_name, u.last_name as producer_last_name
-       FROM order_items oi
-       JOIN products p ON oi.product_id = p.id
-       JOIN producers pr ON oi.producer_id = pr.id
-       JOIN users u ON pr.user_id = u.id
-       WHERE oi.order_id = $1`,
+                    pr.farm_name, u.first_name as producer_first_name, u.last_name as producer_last_name
+             FROM order_items oi
+                      JOIN products p ON oi.product_id = p.id
+                      JOIN producers pr ON oi.producer_id = pr.id
+                      JOIN users u ON pr.user_id = u.id
+             WHERE oi.order_id = $1`,
             [id]
         );
 
@@ -221,6 +221,16 @@ const updateOrderStatus = async (req, res, next) => {
             return res.status(400).json({
                 error: `Statut invalide. Valeurs acceptées : ${validStatuses.join(', ')}`
             });
+        }
+
+        // Un consommateur ne peut que confirmer la récupération
+        if (req.user.role === 'consumer' && status !== 'completed') {
+            return res.status(403).json({ error: 'Action non autorisée' });
+        }
+
+        // Un producteur ne peut pas passer en completed — c'est le consommateur qui confirme
+        if (req.user.role === 'producer' && status === 'completed') {
+            return res.status(403).json({ error: 'Seul le consommateur peut confirmer la récupération' });
         }
 
         const result = await query(
@@ -261,14 +271,14 @@ const getProducerOrders = async (req, res, next) => {
 
         const result = await query(
             `SELECT DISTINCT o.*, h.name as hub_name,
-              u.first_name as consumer_first_name, u.last_name as consumer_last_name
-       FROM orders o
-       JOIN order_items oi ON o.id = oi.order_id
-       LEFT JOIN hubs h ON o.hub_id = h.id
-       JOIN users u ON o.consumer_id = u.id
-       WHERE oi.producer_id = $1
-         AND o.created_at::date = CURRENT_DATE
-       ORDER BY o.created_at DESC`,
+                             u.first_name as consumer_first_name, u.last_name as consumer_last_name
+             FROM orders o
+                      JOIN order_items oi ON o.id = oi.order_id
+                      LEFT JOIN hubs h ON o.hub_id = h.id
+                      JOIN users u ON o.consumer_id = u.id
+             WHERE oi.producer_id = $1
+               AND o.created_at::date = CURRENT_DATE
+             ORDER BY o.created_at DESC`,
             [producer_id]
         );
 
