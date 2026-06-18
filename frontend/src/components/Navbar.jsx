@@ -1,17 +1,19 @@
 'use client';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 export default function Navbar() {
     const router = useRouter();
+    const pathname = usePathname();
     const [user, setUser] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         const stored = localStorage.getItem('foodloop_user');
         if (stored) setUser(JSON.parse(stored));
-    }, []);
+        else setUser(null);
+    }, [pathname]); // Se relance à chaque changement de page
 
     const logout = () => {
         localStorage.removeItem('foodloop_token');
@@ -60,17 +62,19 @@ export default function Navbar() {
                                 Mes commandes
                             </Link>
                         )}
-                        <Link href="/cart" style={{
-                            background: 'var(--color-primary)',
-                            color: '#fff',
-                            padding: '0.4rem 1rem',
-                            borderRadius: '6px',
-                            fontWeight: 600,
-                            textDecoration: 'none',
-                            fontSize: '0.9rem',
-                        }}>
-                            🛒 Panier
-                        </Link>
+                        {user.role === 'consumer' && (
+                            <Link href="/cart" style={{
+                                background: 'var(--color-primary)',
+                                color: '#fff',
+                                padding: '0.4rem 1rem',
+                                borderRadius: '6px',
+                                fontWeight: 600,
+                                textDecoration: 'none',
+                                fontSize: '0.9rem',
+                            }}>
+                                🛒 Panier
+                            </Link>
+                        )}
                         <button onClick={logout} style={{
                             background: 'none',
                             border: '1px solid #ccc',
