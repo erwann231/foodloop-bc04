@@ -15,7 +15,7 @@ router.get('/:id', authenticate, getOrder);
 // POST /api/orders — créer une commande
 router.post('/', authenticate, authorize('consumer'), createOrder);
 
-// PATCH /api/orders/:id/status — changer le statut
-router.patch('/:id/status', authenticate, authorize('producer', 'admin'), updateOrderStatus);
+// PATCH /api/orders/:id/status — changer le statut (producteur, admin, ou consommateur pour 'completed')
+router.patch('/:id/status', authenticate, authorize('producer', 'admin', 'consumer'), updateOrderStatus);
 
 module.exports = router;

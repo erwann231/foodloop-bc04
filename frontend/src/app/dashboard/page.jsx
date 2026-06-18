@@ -63,6 +63,16 @@ export default function DashboardPage() {
         }
     };
 
+    const deleteProduct = async (productId, productName) => {
+        if (!confirm(`Supprimer "${productName}" ? Cette action est irréversible.`)) return;
+        try {
+            await productsApi.delete(productId);
+            setProducts(prev => prev.filter(p => p.id !== productId));
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
     // Stats calculées
     const todayCA = orders
         .filter(o => o.status !== 'cancelled')
@@ -163,7 +173,7 @@ export default function DashboardPage() {
                                 const s = STATUS_LABELS[order.status] || STATUS_LABELS.pending;
                                 const nextStatus = {
                                     pending: 'confirmed', confirmed: 'preparing',
-                                    preparing: 'ready', ready: 'completed',
+                                    preparing: 'ready',
                                 }[order.status];
 
                                 return (
@@ -228,7 +238,7 @@ export default function DashboardPage() {
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
                             <tr style={{ background: '#f9fafb', borderBottom: '1px solid var(--color-border)' }}>
-                                {['Produit', 'Prix', 'Stock', 'Catégorie', 'Disponible'].map(h => (
+                                {['Produit', 'Prix', 'Stock', 'Catégorie', 'Disponible', 'Actions'].map(h => (
                                     <th key={h} style={{ padding: '0.9rem 1rem', textAlign: 'left', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                         {h}
                                     </th>
@@ -262,6 +272,16 @@ export default function DashboardPage() {
                                             fontWeight: 700, cursor: 'pointer',
                                         }}>
                                             {product.is_available ? '✓ Dispo' : '✗ Indispo'}
+                                        </button>
+                                    </td>
+                                    <td style={{ padding: '0.9rem 1rem' }}>
+                                        <button onClick={() => deleteProduct(product.id, product.name)} style={{
+                                            background: 'none', color: '#ef4444',
+                                            border: '1px solid #ef4444', borderRadius: '6px',
+                                            padding: '0.3rem 0.7rem', fontSize: '0.82rem',
+                                            fontWeight: 600, cursor: 'pointer',
+                                        }}>
+                                            Supprimer
                                         </button>
                                     </td>
                                 </tr>
