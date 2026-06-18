@@ -66,4 +66,5 @@ export const ordersApi = {
   getMine: () => apiClient('/orders/mine'),
   getOne: (id) => apiClient(`/orders/${id}`),
   updateStatus: (id, status) => apiClient(`/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  getProducerOrders: () => apiClient('/orders/producer'),
 };

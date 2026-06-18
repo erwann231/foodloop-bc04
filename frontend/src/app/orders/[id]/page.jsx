@@ -20,6 +20,20 @@ export default function OrderDetailPage() {
     const router = useRouter();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [completing, setCompleting] = useState(false);
+
+    const handleComplete = async () => {
+        if (!confirm('Confirmez-vous avoir récupéré votre commande ?')) return;
+        setCompleting(true);
+        try {
+            await ordersApi.updateStatus(id, 'completed');
+            setOrder(prev => ({ ...prev, status: 'completed' }));
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setCompleting(false);
+        }
+    };
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('foodloop_user') || 'null');
@@ -28,24 +42,19 @@ export default function OrderDetailPage() {
     }, [id]);
 
     useEffect(() => {
-        // Socket.IO — connexion pour le suivi temps réel
         if (!order) return;
 
         let socket;
         try {
             const { io } = require('socket.io-client');
             socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001');
-
             socket.emit('join:order', id);
-
             socket.on('order:status_updated', ({ orderId, status }) => {
                 if (orderId === id) {
                     setOrder(prev => ({ ...prev, status }));
                 }
             });
-        } catch (e) {
-            // Socket.IO non disponible en SSR
-        }
+        } catch (e) {}
 
         return () => socket?.disconnect();
     }, [order?.id]);
@@ -79,6 +88,7 @@ export default function OrderDetailPage() {
 
     return (
         <div style={{ maxWidth: '700px', margin: '0 auto', padding: '2rem 1rem' }}>
+
             {/* Retour */}
             <Link href="/orders" style={{ color: 'var(--color-muted)', fontSize: '0.9rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginBottom: '1.5rem' }}>
                 ← Mes commandes
@@ -98,16 +108,35 @@ export default function OrderDetailPage() {
 
                 {/* QR Code */}
                 {order.status === 'ready' && (
-                    <div style={{
-                        marginTop: '1.5rem', background: '#f0faf4', borderRadius: '12px',
-                        padding: '1rem', display: 'inline-block',
-                    }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary)', marginBottom: '0.5rem' }}>
-                            Code de retrait
+                    <div style={{ marginTop: '1.5rem' }}>
+                        <div style={{
+                            background: '#f0faf4', borderRadius: '12px',
+                            padding: '1rem', display: 'inline-block', marginBottom: '1rem',
+                        }}>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary)', marginBottom: '0.5rem' }}>
+                                Code de retrait
+                            </div>
+                            <div style={{ fontFamily: 'Courier New', fontSize: '1.2rem', fontWeight: 800, letterSpacing: '3px', color: 'var(--color-text)' }}>
+                                {order.qr_code?.slice(0, 8).toUpperCase()}
+                            </div>
                         </div>
-                        <div style={{ fontFamily: 'Courier New', fontSize: '1.2rem', fontWeight: 800, letterSpacing: '3px', color: 'var(--color-text)' }}>
-                            {order.qr_code?.slice(0, 8).toUpperCase()}
-                        </div>
+
+                        {/* Bouton confirmation récupération */}
+                        <button
+                            onClick={handleComplete}
+                            disabled={completing}
+                            style={{
+                                display: 'block',
+                                width: '100%',
+                                background: completing ? '#9ca3af' : '#10b981',
+                                color: '#fff', border: 'none', borderRadius: '10px',
+                                padding: '0.85rem 2rem', fontSize: '1rem',
+                                fontWeight: 700, cursor: completing ? 'not-allowed' : 'pointer',
+                                marginTop: '0.5rem',
+                            }}
+                        >
+                            {completing ? 'Confirmation...' : '✅ J\'ai récupéré ma commande'}
+                        </button>
                     </div>
                 )}
             </div>
@@ -119,16 +148,13 @@ export default function OrderDetailPage() {
                         Suivi de commande
                     </h2>
                     <div style={{ position: 'relative' }}>
-                        {/* Ligne de fond */}
                         <div style={{ position: 'absolute', top: '14px', left: '14px', right: '14px', height: '3px', background: '#e5e7eb', borderRadius: '99px' }} />
-                        {/* Ligne de progression */}
                         <div style={{
                             position: 'absolute', top: '14px', left: '14px',
                             height: '3px', background: 'var(--color-primary)', borderRadius: '99px',
                             width: currentStep >= 0 ? `${(currentStep / (STEPS.length - 1)) * (100 - 28 / 7)}%` : '0',
                             transition: 'width 0.5s ease',
                         }} />
-                        {/* Étapes */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
                             {STEPS.map((step, i) => {
                                 const done = i <= currentStep;
@@ -173,7 +199,6 @@ export default function OrderDetailPage() {
                     ))}
                 </div>
 
-                {/* Total */}
                 <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid var(--color-border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-muted)', fontSize: '0.9rem', marginBottom: '0.35rem' }}>
                         <span>Commission FoodLoop (8%)</span>
