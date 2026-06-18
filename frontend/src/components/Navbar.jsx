@@ -62,17 +62,19 @@ export default function Navbar() {
                                 Mes commandes
                             </Link>
                         )}
-                        <Link href="/cart" style={{
-                            background: 'var(--color-primary)',
-                            color: '#fff',
-                            padding: '0.4rem 1rem',
-                            borderRadius: '6px',
-                            fontWeight: 600,
-                            textDecoration: 'none',
-                            fontSize: '0.9rem',
-                        }}>
-                            🛒 Panier
-                        </Link>
+                        {user.role === 'consumer' && (
+                            <Link href="/cart" style={{
+                                background: 'var(--color-primary)',
+                                color: '#fff',
+                                padding: '0.4rem 1rem',
+                                borderRadius: '6px',
+                                fontWeight: 600,
+                                textDecoration: 'none',
+                                fontSize: '0.9rem',
+                            }}>
+                                🛒 Panier
+                            </Link>
+                        )}
                         <button onClick={logout} style={{
                             background: 'none',
                             border: '1px solid #ccc',
