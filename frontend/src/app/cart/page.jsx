@@ -42,7 +42,8 @@ export default function CartPage() {
             const items = cart.map(i => ({ product_id: i.id, quantity: i.quantity }));
             const { order } = await ordersApi.create({ items });
             localStorage.removeItem('foodloop_cart');
-            router.push(`/orders/${order.id}`);
+            // Rediriger vers la page de paiement Stripe
+            router.push(`/payment?order_id=${order.id}`);
         } catch (err) {
             setError(err.message);
         } finally {
