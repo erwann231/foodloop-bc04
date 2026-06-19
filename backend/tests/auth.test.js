@@ -9,9 +9,7 @@ jest.mock('../src/config/database', () => ({
 
 const { query } = require('../src/config/database');
 
-afterAll((done) => {
-  server.close(done);
-});
+afterAll(() => {});
 
 describe('POST /api/auth/register', () => {
   beforeEach(() => {

@@ -29,9 +29,7 @@ const mockClient = {
     release: jest.fn(),
 };
 
-afterAll((done) => {
-    server.close(done);
-});
+afterAll(() => {});
 
 beforeEach(() => {
     jest.clearAllMocks();

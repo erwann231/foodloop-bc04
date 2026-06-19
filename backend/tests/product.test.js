@@ -18,9 +18,7 @@ const makeToken = (role = 'consumer', id = 'user-uuid-123') => {
     return jwt.sign({ id, email: 'test@test.com', role }, process.env.JWT_SECRET || 'test_secret');
 };
 
-afterAll((done) => {
-    server.close(done);
-});
+afterAll(() => {});
 
 beforeEach(() => {
     jest.clearAllMocks();
