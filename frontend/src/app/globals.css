@@ -38,3 +38,64 @@ button {
   cursor: pointer;
   font-family: inherit;
 }
+
+/* ── Navbar responsive ───────────────────────────────── */
+.nav-desktop {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0.25rem;
+}
+
+.nav-mobile-menu {
+  display: none;
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Navbar */
+  .nav-desktop {
+    display: none !important;
+  }
+
+  .nav-hamburger {
+    display: block !important;
+  }
+
+  .nav-mobile-menu {
+    display: flex !important;
+  }
+
+  /* Dashboard stats — 2 colonnes sur mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Tableaux — scroll horizontal */
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  /* Panier layout */
+  .cart-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Récapitulatif panier pas sticky */
+  .cart-summary {
+    position: static !important;
+  }
+
+  /* Titres */
+  h1 {
+    font-size: 1.4rem !important;
+  }
+}
