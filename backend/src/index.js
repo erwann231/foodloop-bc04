@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth.routes');
 const productRoutes = require('./routes/product.routes');
 const orderRoutes = require('./routes/order.routes');
 const userRoutes = require('./routes/user.routes');
+const paymentRoutes = require('./routes/payment.routes');
 const { errorHandler } = require('./middlewares/error.middleware');
 const { initSocket } = require('./services/socket.service');
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Health check (utile pour Render)
 app.get('/health', (req, res) => {
@@ -41,10 +43,12 @@ app.get('/health', (req, res) => {
 // Gestion des erreurs (toujours en dernier)
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-  console.log(`🚀 Serveur FoodLoop démarré sur le port ${PORT}`);
-  console.log(`📡 Environnement : ${process.env.NODE_ENV || 'development'}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = process.env.PORT || 3001;
+  server.listen(PORT, () => {
+    console.log(`🚀 Serveur FoodLoop démarré sur le port ${PORT}`);
+    console.log(`📡 Environnement : ${process.env.NODE_ENV || 'development'}`);
+  });
+}
 
 module.exports = { app, server };
