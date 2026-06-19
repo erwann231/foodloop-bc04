@@ -63,6 +63,11 @@ export default function Navbar() {
                             </Link>
                         )}
                         {user.role === 'consumer' && (
+                            <Link href="/subscriptions" style={{ color: 'var(--color-text)', fontWeight: 500, textDecoration: 'none', fontSize: '0.95rem' }}>
+                                Abonnements
+                            </Link>
+                        )}
+                        {user.role === 'consumer' && (
                             <Link href="/cart" style={{
                                 background: 'var(--color-primary)',
                                 color: '#fff',

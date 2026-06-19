@@ -9,6 +9,7 @@ const productRoutes = require('./routes/product.routes');
 const orderRoutes = require('./routes/order.routes');
 const userRoutes = require('./routes/user.routes');
 const paymentRoutes = require('./routes/payment.routes');
+const subscriptionRoutes = require('./routes/subscription.routes');
 const { errorHandler } = require('./middlewares/error.middleware');
 const { initSocket } = require('./services/socket.service');
 
@@ -34,6 +35,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Health check (utile pour Render)
 app.get('/health', (req, res) => {

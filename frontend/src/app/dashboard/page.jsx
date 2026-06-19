@@ -17,6 +17,7 @@ export default function DashboardPage() {
     const router = useRouter();
     const [orders, setOrders] = useState([]);
     const [products, setProducts] = useState([]);
+    const [activeSubscriptions, setActiveSubscriptions] = useState(0);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('orders');
     const [user, setUser] = useState(null);
@@ -32,12 +33,16 @@ export default function DashboardPage() {
 
     const fetchData = async () => {
         try {
-            const [ordersRes, productsRes] = await Promise.all([
+            const [ordersRes, productsRes, subsRes] = await Promise.all([
                 ordersApi.getProducerOrders(),
                 productsApi.getAll(),
+                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/subscriptions/producer-count`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('foodloop_token')}` }
+                }).then(r => r.ok ? r.json() : { count: 0 }),
             ]);
             setOrders(ordersRes.orders || []);
             setProducts(productsRes.products || []);
+            setActiveSubscriptions(subsRes.count || 0);
         } catch (err) {
             console.error(err);
         } finally {
@@ -109,11 +114,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Cartes stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
                 {[
                     { label: 'Commandes du jour', value: orders.length, icon: '📦', color: '#dbeafe', textColor: '#1e40af' },
                     { label: 'En attente', value: pendingOrders, icon: '⏳', color: '#fef3c7', textColor: '#92400e' },
                     { label: 'CA du jour', value: `${todayCA.toFixed(2)} €`, icon: '💶', color: '#d1fae5', textColor: '#065f46' },
+                    { label: 'Abonnés actifs', value: activeSubscriptions, icon: '🔄', color: '#ede9fe', textColor: '#5b21b6' },
                 ].map(({ label, value, icon, color, textColor }) => (
                     <div key={label} style={{
                         background: '#fff', borderRadius: '12px', padding: '1.5rem',
