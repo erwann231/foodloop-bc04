@@ -74,7 +74,8 @@ export default function CartPage() {
                 Mon panier
             </h1>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem', alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: '1.5rem', alignItems: 'start' }}
+                 className="cart-layout">
                 {/* Liste des articles */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {cart.map(item => (
