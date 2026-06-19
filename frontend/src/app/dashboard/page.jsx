@@ -157,7 +157,7 @@ export default function DashboardPage() {
 
             {/* Onglet Commandes */}
             {activeTab === 'orders' && (
-                <div className="table-responsive" style={{ background: '#fff', borderRadius: '12px', boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
+                <div style={{ background: '#fff', borderRadius: '12px', boxShadow: 'var(--shadow)', overflowX: 'auto' }}>
                     {orders.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-muted)' }}>
                             <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📭</div>
@@ -231,7 +231,7 @@ export default function DashboardPage() {
 
             {/* Onglet Produits */}
             {activeTab === 'products' && (
-                <div style={{ background: '#fff', borderRadius: '12px', boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
+                <div style={{ background: '#fff', borderRadius: '12px', boxShadow: 'var(--shadow)', overflowX: 'auto' }}>
                     {products.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-muted)' }}>
                             <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🌱</div>
