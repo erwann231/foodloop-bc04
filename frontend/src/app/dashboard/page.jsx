@@ -114,7 +114,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Cartes stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+            <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
                 {[
                     { label: 'Commandes du jour', value: orders.length, icon: '📦', color: '#dbeafe', textColor: '#1e40af' },
                     { label: 'En attente', value: pendingOrders, icon: '⏳', color: '#fef3c7', textColor: '#92400e' },
@@ -157,7 +157,7 @@ export default function DashboardPage() {
 
             {/* Onglet Commandes */}
             {activeTab === 'orders' && (
-                <div style={{ background: '#fff', borderRadius: '12px', boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
+                <div className="table-responsive" style={{ background: '#fff', borderRadius: '12px', boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
                     {orders.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-muted)' }}>
                             <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📭</div>
