@@ -184,6 +184,16 @@ async function chargeSubscriptionBasket({ stripeCustomerId, amount, producerAcco
   };
 }
 
+// Récupérer le statut d'un compte Stripe Connect (onboarding terminé ? payouts actifs ?)
+async function getAccountStatus(stripeAccountId) {
+  const account = await stripe.accounts.retrieve(stripeAccountId);
+  return {
+    payoutsEnabled: account.payouts_enabled,
+    chargesEnabled: account.charges_enabled,
+    detailsSubmitted: account.details_submitted,
+  };
+}
+
 module.exports = {
   createPaymentIntent,
   createProducerAccount,
@@ -193,4 +203,5 @@ module.exports = {
   getOrCreateCustomer,
   createSetupIntent,
   chargeSubscriptionBasket,
+  getAccountStatus,
 };

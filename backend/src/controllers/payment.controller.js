@@ -102,7 +102,7 @@ async function handleWebhook(req, res) {
 
   let event;
   try {
-    event = stripeService.constructWebhookEvent(req.rawBody, signature);
+    event = stripeService.constructWebhookEvent(req.body, signature);
   } catch (err) {
     console.error('[Webhook] Signature invalide :', err.message);
     return res.status(400).json({ error: 'Signature webhook invalide' });
@@ -111,21 +111,27 @@ async function handleWebhook(req, res) {
   try {
     switch (event.type) {
 
-      // Paiement réussi → confirmer la commande
+// Paiement réussi → confirmer la commande OU facturer l'abonnement
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object;
-        const orderId = paymentIntent.metadata.order_id;
 
-        if (orderId) {
+        if (paymentIntent.metadata.type === 'weekly_basket') {
+          const subscriptionId = paymentIntent.metadata.subscription_id;
           await db.query(
-            `UPDATE orders SET status = 'confirmed', paid_at = NOW() WHERE stripe_payment_intent_id = $1`,
-            [paymentIntent.id]
+            `UPDATE subscriptions SET last_billed_at = NOW(), next_billing_date = NOW() + INTERVAL '7 days'
+             WHERE id = $1`,
+            [subscriptionId]
           );
-
-          // Émettre l'événement Socket.IO pour le temps réel
-          socketService.emitOrderUpdate(orderId, 'confirmed');
-
-          console.log(`[Webhook] Commande ${orderId} confirmée après paiement`);
+        } else {
+          const orderId = paymentIntent.metadata.order_id;
+          if (orderId) {
+            await db.query(
+              `UPDATE orders SET status = 'confirmed', paid_at = NOW() WHERE stripe_payment_intent_id = $1`,
+              [paymentIntent.id]
+            );
+            socketService.emitOrderUpdate(orderId, 'confirmed');
+            console.log(`[Webhook] Commande ${orderId} confirmée après paiement`);
+          }
         }
         break;
       }
@@ -143,20 +149,6 @@ async function handleWebhook(req, res) {
 
           socketService.emitOrderUpdate(orderId, 'cancelled');
           console.log(`[Webhook] Paiement échoué pour la commande ${orderId}`);
-        }
-        break;
-      }
-
-      // Abonnement hebdomadaire : paiement réussi
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object;
-        if (paymentIntent.metadata.type === 'weekly_basket') {
-          const subscriptionId = paymentIntent.metadata.subscription_id;
-          await db.query(
-            `UPDATE subscriptions SET last_billed_at = NOW(), next_billing_date = NOW() + INTERVAL '7 days'
-             WHERE id = $1`,
-            [subscriptionId]
-          );
         }
         break;
       }
@@ -250,9 +242,76 @@ async function createSetupIntent(req, res) {
   }
 }
 
+// ────────────────────────────────────────────
+// POST /api/payments/connect-account
+// Crée (si besoin) le compte Stripe Connect du producteur
+// et renvoie le lien d'onboarding
+// Auth : producer
+// ────────────────────────────────────────────
+async function createConnectAccount(req, res) {
+  try {
+    const userId = req.user.id;
+    const userData = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+    const user = userData.rows[0];
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur introuvable' });
+    }
+
+    let stripeAccountId = user.stripe_account_id;
+
+    if (!stripeAccountId) {
+      stripeAccountId = await stripeService.createProducerAccount({
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+      });
+
+      await db.query('UPDATE users SET stripe_account_id = $1 WHERE id = $2', [stripeAccountId, userId]);
+    }
+
+    const onboardingUrl = await stripeService.createOnboardingLink(stripeAccountId, {
+      returnUrl: `${process.env.FRONTEND_URL}/producer/onboarding/complete`,
+      refreshUrl: `${process.env.FRONTEND_URL}/producer/onboarding/refresh`,
+    });
+
+    return res.status(200).json({ url: onboardingUrl });
+
+  } catch (err) {
+    console.error('[createConnectAccount]', err);
+    return res.status(500).json({ error: 'Erreur lors de la création du compte Stripe' });
+  }
+}
+
+// ────────────────────────────────────────────
+// GET /api/payments/connect-account/status
+// Vérifie si le producteur a terminé l'onboarding
+// Auth : producer
+// ────────────────────────────────────────────
+async function getConnectAccountStatus(req, res) {
+  try {
+    const userId = req.user.id;
+    const userData = await db.query('SELECT stripe_account_id FROM users WHERE id = $1', [userId]);
+    const stripeAccountId = userData.rows[0]?.stripe_account_id;
+
+    if (!stripeAccountId) {
+      return res.status(200).json({ connected: false });
+    }
+
+    const status = await stripeService.getAccountStatus(stripeAccountId);
+    return res.status(200).json({ connected: true, ...status });
+
+  } catch (err) {
+    console.error('[getConnectAccountStatus]', err);
+    return res.status(500).json({ error: 'Erreur lors de la vérification du compte' });
+  }
+}
+
 module.exports = {
   createPaymentIntent,
   handleWebhook,
   refundOrder,
   createSetupIntent,
+  createConnectAccount,
+  getConnectAccountStatus,
 };

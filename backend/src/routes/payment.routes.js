@@ -16,7 +16,13 @@ router.post('/payments/create-intent', authenticate, authorize('consumer'), paym
 router.post('/payments/setup-intent', authenticate, authorize('consumer'), paymentController.createSetupIntent);
 
 // POST /api/payments/refund — producteur ou admin, rembourse une commande
-router.post('/payments/refund', authenticate, authorize(['producer', 'admin']), paymentController.refundOrder);
+router.post('/payments/refund', authenticate, authorize('producer', 'admin'), paymentController.refundOrder);
+
+// POST /api/payments/connect-account — producer, crée/récupère le lien d'onboarding Stripe
+router.post('/payments/connect-account', authenticate, authorize('producer'), paymentController.createConnectAccount);
+
+// GET /api/payments/connect-account/status — producer, vérifie si l'onboarding est terminé
+router.get('/payments/connect-account/status', authenticate, authorize('producer'), paymentController.getConnectAccountStatus);
 
 // POST /api/payments/webhook — Stripe uniquement (pas d'auth JWT)
 // ⚠️ Ce endpoint doit être déclaré AVANT express.json() dans app.js
